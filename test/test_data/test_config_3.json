@@ -1,0 +1,10 @@
+{
+  "bootstrap_servers": ["localhost:9092"],
+  "topic": ["recipient"],
+  "function_scripts": [
+    {"function_name": "script",
+      "function": "def script(msg):\n    d = json.loads(msg)\n    d['test'] = 'test_data'\n    return d"
+    }],
+  "main_function_name": "script",
+  "dependencies": ["json"]
+}

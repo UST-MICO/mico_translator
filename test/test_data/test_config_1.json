@@ -1,0 +1,10 @@
+{
+  "bootstrap_servers": ["localhost:9092"],
+  "topic": ["recipient"],
+  "function_scripts": [
+    {"function_name":  "script",
+      "function":"def script(string):\n    return \"translated: \" + string"
+    }],
+  "main_function_name": "script",
+  "dependencies": []
+}
