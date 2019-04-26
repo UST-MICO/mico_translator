@@ -1,16 +1,16 @@
 from translator.helpers import load_test_config
-from translator.transformator import TransformatorCustom
+from translator.translator import TranslatorCustom
 
 
-class TestTransformatorCustom:
+class TestTranslatorCustom:
     def test_apply_script_1(self):
         """
         Tests if the translator is able to load a user defined function and apply it on a message
         """
         msg = 'this is a message'
         config = load_test_config('test_config_1.json')
-        trns = TransformatorCustom(user_functions=config['function_scripts'])
-        result = trns.transform(msg)
+        trns = TranslatorCustom(user_functions=config['function_scripts'])
+        result = trns.translate(msg)
         assert('translated: ' + msg == result)
 
     def test_apply_script_2(self):
@@ -20,8 +20,8 @@ class TestTransformatorCustom:
         """
         msg = 'this is a message'
         config = load_test_config('test_config_2.json')
-        trns = TransformatorCustom(user_functions=config['function_scripts'])
-        result = trns.transform(msg)
+        trns = TranslatorCustom(user_functions=config['function_scripts'])
+        result = trns.translate(msg)
 
         assert('translated: ' + msg == result)
 
@@ -35,7 +35,7 @@ class TestTransformatorCustom:
         """
         msg = '{"name": "this is a json"}'
         config = load_test_config('test_config_3.json')
-        trns = TransformatorCustom(user_functions=config['function_scripts'], dependencies=config['dependencies'])
-        result = trns.transform(msg)
+        trns = TranslatorCustom(user_functions=config['function_scripts'], dependencies=config['dependencies'])
+        result = trns.translate(msg)
         assert(('test', 'test_data') in result.items())
 

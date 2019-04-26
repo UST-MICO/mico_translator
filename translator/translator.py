@@ -2,7 +2,7 @@ from abc import abstractmethod
 from importlib import import_module, invalidate_caches
 
 
-class AbstractTransformator:
+class AbstractTranslator:
     """
     This class contains basic functionalities, that are required by Transformators.
     """
@@ -44,7 +44,7 @@ class AbstractTransformator:
         invalidate_caches()
 
     @abstractmethod
-    def transform(self, msg):
+    def translate(self, msg):
         """
         :param msg: The message, that shall be transformed
         :return: the result of the message transformation
@@ -52,17 +52,21 @@ class AbstractTransformator:
         pass
 
 
-class TransformatorCustom(AbstractTransformator):
+class TranslatorCustom(AbstractTranslator):
     """
     This transformer only applies the user defined functions. There are no additional features.
     """
     def __init__(self, user_functions, dependencies=None, main_function_name="script"):
         super().__init__(user_functions, dependencies, main_function_name)
 
-    def transform(self, msg):
+    def translate(self, msg):
         return self.user_script(msg)
 
 
-
-
+class TransformatorXMLtoJSON(AbstractTranslator):
+    """
+    This transformer converts an XML to JSON
+    """
+    def translate(self, msg):
+        return msg
 
