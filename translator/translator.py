@@ -1,5 +1,7 @@
 from abc import abstractmethod
 from importlib import import_module, invalidate_caches
+import json
+import xmltodict
 
 
 class AbstractTranslator:
@@ -7,7 +9,7 @@ class AbstractTranslator:
     This class contains basic functionalities, that are required by Transformators.
     """
 
-    def __init__(self, user_functions, dependencies=None, main_function_name="script"):
+    def __init__(self, user_functions=None, dependencies=None, main_function_name="script"):
         self._import_modules(dependencies)
         self.dependencies = dependencies
         self.script = user_functions
@@ -25,13 +27,12 @@ class AbstractTranslator:
 
         :return: function object of the entry point function (main function)
         """
-        for func in user_functions or []:
-            exec(func["function"])
-            globals()[func["function_name"]] = locals()[func["function_name"]]
-        # exec(user_script)
-        # locals()[function_name]
-        invalidate_caches()
-        return globals()[main_function_name]
+        if user_functions is not None:
+            for func in user_functions or []:
+                exec(func["function"])
+                globals()[func["function_name"]] = locals()[func["function_name"]]
+            invalidate_caches()
+            return globals()[main_function_name]
 
     @staticmethod
     def _import_modules(modules):
@@ -68,5 +69,5 @@ class TransformatorXMLtoJSON(AbstractTranslator):
     This transformer converts an XML to JSON
     """
     def translate(self, msg):
-        return msg
+        return json.dumps(xmltodict.parse(msg))
 
