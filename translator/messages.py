@@ -58,7 +58,7 @@ class CloudEvent():
         new_event = CloudEvent(self.message)
         new_event.id = None
         new_event.time = None
-        new_event.created_from = self.id
+        new_event['created_from'] = self.id
         return new_event
 
     def serialize_message(self) -> str:
