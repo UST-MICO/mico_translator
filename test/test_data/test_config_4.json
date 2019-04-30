@@ -1,0 +1,14 @@
+{
+  "bootstrap_servers": ["localhost:9092"],
+  "topic": ["recipient"],
+  "function_scripts": [
+    {"function_name": "script",
+      "function": "def script(dict_elements):\n    dict_elements['path_1'] = dict_elements['path_1'] + 100\n    dict_elements['path_2'] = dict_elements['path_2'].lower()\n    return dict_elements\n"
+    }],
+  "element_paths": [
+    {"key": "path_1", "path": "customer.profile.id"},
+    {"key": "path_2", "path": "customer.profile.name"}
+  ],
+  "main_function_name": "script",
+  "dependencies": ["json"]
+}

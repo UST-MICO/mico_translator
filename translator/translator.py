@@ -2,6 +2,7 @@ from abc import abstractmethod
 from importlib import import_module, invalidate_caches
 import json
 import xmltodict
+from translator.helpers import element_from_path, set_element_from_path
 
 
 class AbstractTranslator:
@@ -64,10 +65,49 @@ class TranslatorCustom(AbstractTranslator):
         return self.user_script(msg)
 
 
-class TransformatorXMLtoJSON(AbstractTranslator):
+class TranslatorXMLtoJSON(AbstractTranslator):
     """
     This transformer converts an XML to JSON
     """
     def translate(self, msg):
         return json.dumps(xmltodict.parse(msg))
+
+
+class TranslatorEDIT(AbstractTranslator):
+    def __init__(self, user_functions, dict_element_paths, dependencies=None, main_function_name="script"):
+        super().__init__(user_functions, dependencies, main_function_name)
+        self.dict_element_paths = self._prepare_dict_element_paths(dict_element_paths)
+
+    @staticmethod
+    def _prepare_dict_element_paths(dict_element_paths):
+        return [{'key':d['key'], 'path':d['path'].split('.')} for d in dict_element_paths]
+
+
+    def _extract_elements_from_dict(self, dict_msg):
+        d = dict()
+        for dict_path in self.dict_element_paths:
+            d[dict_path['key']] = element_from_path(dict_msg, dict_path['path'])
+        return d
+
+    def translate(self, msg):
+        dict_elements = self._extract_elements_from_dict(msg)
+        translated_elements = self.user_script(dict_elements)
+        for d in self.dict_element_paths:
+            msg = set_element_from_path(msg, d['path'], translated_elements[d['key']])
+        return msg
+
+
+class TranslatorREMOVE(AbstractTranslator):
+    def translate(self, msg):
+        raise NotImplementedError
+
+
+class TranslatorADD(AbstractTranslator):
+    """
+    This translator adds one or more elements to a message message
+    """
+    def translate(self, a):
+        raise NotImplementedError
+
+
 
