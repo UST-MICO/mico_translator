@@ -24,7 +24,7 @@ class AbstractTranslator:
         Loads the user defined functions into the global variable space. Additionally loads the function, which can
         be used as entry point (main function) when a message shall be transformed.
         :param ([dict]) user_functions: A list of dictionaries. Each provides a python function
-        :param (str) function_name: The name of the entry point function (main function)
+        :param ([str]) user_functions: The name of the entry point function (main function)
 
         :return: function object of the entry point function (main function)
         """
@@ -80,8 +80,7 @@ class TranslatorEDIT(AbstractTranslator):
 
     @staticmethod
     def _prepare_dict_element_paths(dict_element_paths):
-        return [{'key':d['key'], 'path':d['path'].split('.')} for d in dict_element_paths]
-
+        return [{'key': d['key'], 'path':d['path'].split('.')} for d in dict_element_paths]
 
     def _extract_elements_from_dict(self, dict_msg):
         d = dict()

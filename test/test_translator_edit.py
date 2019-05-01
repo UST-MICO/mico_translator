@@ -12,7 +12,6 @@ msg_data_1 = {
 }
 
 
-
 class TestTranslatorEDIT:
     def test_1(self):
         config = json.loads(load_test_data('test_config_4.json'))

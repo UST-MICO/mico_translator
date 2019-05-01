@@ -2,3 +2,4 @@ kafka-python
 jxmlease
 pytest
 xmltodict
+lxml
