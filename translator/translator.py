@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from importlib import import_module, invalidate_caches
+from translator.messages import CloudEvent
 import json
 import xmltodict
 from translator.helpers import element_from_path, set_element_from_path
@@ -54,23 +55,27 @@ class AbstractTranslator:
         pass
 
 
-class TranslatorCustom(AbstractTranslator):
+class TranslatorCUSTOM(AbstractTranslator):
     """
     This transformer only applies the user defined functions. There are no additional features.
     """
     def __init__(self, user_functions, dependencies=None, main_function_name="script"):
         super().__init__(user_functions, dependencies, main_function_name)
 
-    def translate(self, msg):
-        return self.user_script(msg)
+    def translate(self, msg: CloudEvent):
+        translated = msg.create_new_message()
+        translated.data = self.user_script(msg.data)
+        return translated
 
 
 class TranslatorXMLtoJSON(AbstractTranslator):
     """
     This transformer converts an XML to JSON
     """
-    def translate(self, msg):
-        return json.dumps(xmltodict.parse(msg))
+    def translate(self, msg: CloudEvent):
+        translated = msg.create_new_message()
+        translated.data = json.dumps(xmltodict.parse(msg.data))
+        return translated
 
 
 class TranslatorEDIT(AbstractTranslator):
@@ -88,12 +93,13 @@ class TranslatorEDIT(AbstractTranslator):
             d[dict_path['key']] = element_from_path(dict_msg, dict_path['path'])
         return d
 
-    def translate(self, msg):
-        dict_elements = self._extract_elements_from_dict(msg)
+    def translate(self, msg: CloudEvent):
+        translated = msg.create_new_message()
+        dict_elements = self._extract_elements_from_dict(msg.data)
         translated_elements = self.user_script(dict_elements)
         for d in self.dict_element_paths:
-            msg = set_element_from_path(msg, d['path'], translated_elements[d['key']])
-        return msg
+            translated.data = set_element_from_path(translated.data, d['path'], translated_elements[d['key']])
+        return translated
 
 
 class TranslatorREMOVE(AbstractTranslator):
