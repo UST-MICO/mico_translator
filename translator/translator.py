@@ -17,7 +17,6 @@ class AbstractTranslator:
         self.script = user_functions
         self.main_function_name = main_function_name
         self.user_script = self._load_user_defined_functions(user_functions, main_function_name)
-        pass
 
     @staticmethod
     def _load_user_defined_functions(user_functions, main_function_name):

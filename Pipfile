@@ -15,6 +15,7 @@ nose = "*"
 kafka-python = "*"
 jxmlease = "*"
 lxml = "*"
+xmltodict = "*"
 
 [requires]
 python_version = "3.6"
