@@ -1,9 +1,11 @@
 from typing import List
 from kafka import KafkaConsumer, KafkaProducer
+from kafka.errors import NoBrokersAvailable
 from .translators import MessageTranslator
 from .messages import CloudEvent
 from json import loads, dumps
 from json.decoder import JSONDecodeError
+from time import sleep
 
 
 class TranslationManager():
@@ -11,13 +13,24 @@ class TranslationManager():
     Manages on the fly translation of messages between source_topic and target_topic.
     """
 
-    def __init__(self, bootstrap_servers: List[str], source_topic: str, target_topic: str, translator):
+    def __init__(self, bootstrap_servers: List[str], source_topic: str, target_topic: str, translator: MessageTranslator):
         self.bootstrap_servers = bootstrap_servers
         self.source_topic = source_topic
         self.target_topic = target_topic
-        self.consumer = KafkaConsumer(self.source_topic, bootstrap_servers=bootstrap_servers)
-        self.producer = KafkaProducer(bootstrap_servers=bootstrap_servers, value_serializer=lambda v: v.serialize_message().encode('utf-8'))
         self.translator = translator
+        for i in range(10):
+            try:
+                print('Trying to connect.')
+                self.consumer = KafkaConsumer(self.source_topic, bootstrap_servers=bootstrap_servers)
+                self.producer = KafkaProducer(bootstrap_servers=bootstrap_servers, value_serializer=lambda v: v.serialize_message().encode('utf-8'))
+                break
+            except NoBrokersAvailable:
+                print(f'Failed to connect to broker. Retry in {2**i}s')
+                sleep(2**i)
+        else:
+            print('No brokers available, exiting.')
+            raise NoBrokersAvailable()
+        print(f'Connected to broker(s) {bootstrap_servers}.')
 
     def start_consuming(self):
         """
