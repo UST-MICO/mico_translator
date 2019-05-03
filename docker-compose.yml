@@ -1,0 +1,29 @@
+version: '2'
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181"
+  kafka:
+    image: wurstmeister/kafka
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      HOSTNAME_COMMAND: "curl -s ifconfig.co"
+      #KAFKA_ADVERTISED_HOST_NAME: host.docker.internal
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_BROKER_ID: "1"
+      KAFKA_CREATE_TOPICS: "test:1:1,neu:1:1"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  message-translator:
+    build: .
+    container_name: message-translator
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_BROKER: kafka:9092
