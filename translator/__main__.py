@@ -1,4 +1,4 @@
-import os
+from os import environ
 from pathlib import Path
 from json import load
 from .translation_manager import TranslationManager
@@ -6,16 +6,19 @@ from .translators import MessageTranslator
 from .messages import CloudEvent
 
 if __name__ == "__main__":
-    translator = MessageTranslator.get_translator('json', 'xml')
-    """
-    with Path('./test/test_data/cloud_event_2.json').open() as _file:
-        data = load(_file)
-        cloud_event = CloudEvent(data)
-        if translator.test_message(cloud_event):
-            translated = translator.translate(cloud_event)
-            print(translated.serialize_message())
-    """
-    manager = TranslationManager(['localhost:9092'], 'test', 'neu', translator)
+    SOURCE_FORMAT = environ.get('SOURCE_FORMAT', 'json')
+    TARGET_FORMAT = environ.get('TARGET_FORMAT', 'xml')
+
+    SOURCE_TOPIC = environ.get('SOURCE_TOPIC', 'test')
+    TARGET_TOPIC = environ.get('TARGET_TOPIC', 'neu')
+    KAFKA_BROKER = environ.get('KAFKA_BROKER', 'localhost:9092')
+
+    print(f'Starting translation from "{SOURCE_FORMAT}" to "{TARGET_FORMAT}".')
+    print(f'Subscribing to kafka broker "{KAFKA_BROKER}" topic "{SOURCE_TOPIC}".')
+    print(f'Publishing translated messages on topic "{TARGET_TOPIC}"')
+
+    translator = MessageTranslator.get_translator(SOURCE_FORMAT, TARGET_FORMAT)
+    manager = TranslationManager([KAFKA_BROKER], SOURCE_TOPIC, TARGET_TOPIC, translator)
     try:
         manager.start_consuming()
     except KeyboardInterrupt:

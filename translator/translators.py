@@ -21,7 +21,7 @@ class MessageTranslator():
         cls.target_format = target_format
 
     @staticmethod
-    def get_translator(source_format: str, target_format: str):
+    def get_translator(source_format: str, target_format: str) -> 'MessageTranslator':
         """
         Get the translator translating from source to target format.
         """
