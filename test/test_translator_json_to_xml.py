@@ -1,4 +1,4 @@
-from translator.json_to_xml_translator import JsonToXmlTranslator
+from translator.translator import TranslatorJSONtoXML
 from translator.helpers import load_test_data
 from translator_test import TranslatorTest
 from translator.messages import CloudEvent
@@ -13,7 +13,7 @@ class TestTranslatorJSONtoXML(TranslatorTest):
         Tests if the translator is able to transform a simple JSON to XML
         """
         cloud_event = CloudEvent(loads(load_test_data('cloud_event_2.json')))
-        translator = JsonToXmlTranslator()
+        translator = TranslatorJSONtoXML()
         result = translator.translate(cloud_event)
 
         tree_xml = etree.fromstring(result.data)

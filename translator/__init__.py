@@ -1,1 +1,2 @@
-from . import json_to_xml_translator
+from translator.translator import TranslatorCUSTOM, TranslatorADD, TranslatorEDIT, \
+                                    TranslatorJSONtoXML, TranslatorXMLtoJSON

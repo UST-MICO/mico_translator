@@ -1,3 +1,4 @@
+from translator.abstract_translator import MessageTranslator
 from translator.translator import TranslatorXMLtoJSON
 from translator.helpers import load_test_data
 from translator_test import TranslatorTest
@@ -6,6 +7,12 @@ import json
 
 
 class TestTranslatorXMLtoJSON(TranslatorTest):
+
+    def test_0(self):
+        translator = MessageTranslator.get_translator('xml', 'json', 'format_translation')
+        assert translator.target_format == 'json'
+        assert translator.source_format == 'xml'
+        assert translator.operation == 'format_translation'
 
     def test_translate_1(self):
         """

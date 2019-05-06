@@ -1,7 +1,7 @@
 from typing import List
 from kafka import KafkaConsumer, KafkaProducer
 from kafka.errors import NoBrokersAvailable
-from .translators import MessageTranslator
+from translator.translator import MessageTranslator
 from .messages import CloudEvent
 from json import loads, dumps
 from json.decoder import JSONDecodeError

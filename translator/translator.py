@@ -1,65 +1,28 @@
-from abc import abstractmethod
-from importlib import import_module, invalidate_caches
-from translator.messages import CloudEvent
 import json
 import xmltodict
-from translator.helpers import element_from_path, set_element_from_path
+from translator.abstract_translator import *
+from .messages import CloudEvent
+from lxml import etree, builder
+from typing import Any
 
 
-class AbstractTranslator:
-    """
-    This class contains basic functionalities, that are required by Transformators.
-    """
 
-    def __init__(self, user_functions=None, dependencies=None, main_function_name="script"):
-        self._import_modules(dependencies)
-        self.dependencies = dependencies
-        self.script = user_functions
-        self.main_function_name = main_function_name
-        self.user_script = self._load_user_defined_functions(user_functions, main_function_name)
-
-    @staticmethod
-    def _load_user_defined_functions(user_functions, main_function_name):
-        """
-        Loads the user defined functions into the global variable space. Additionally loads the function, which can
-        be used as entry point (main function) when a message shall be transformed.
-        :param ([dict]) user_functions: A list of dictionaries. Each provides a python function
-        :param ([str]) user_functions: The name of the entry point function (main function)
-
-        :return: function object of the entry point function (main function)
-        """
-        if user_functions is not None:
-            for func in user_functions or []:
-                exec(func["function"])
-                globals()[func["function_name"]] = locals()[func["function_name"]]
-            invalidate_caches()
-            return globals()[main_function_name]
-
-    @staticmethod
-    def _import_modules(modules):
-        """
-        Imports the modules, that are required in the user defined functions.
-        :param ([str]) modules: the names of the modules, that shall be imported
-        """
-        for module in modules or []:
-            globals()[module] = import_module(module)
-        invalidate_caches()
-
-    @abstractmethod
-    def translate(self, msg):
-        """
-        :param msg: The message, that shall be transformed
-        :return: the result of the message transformation
-        """
-        pass
-
-
-class TranslatorCUSTOM(AbstractTranslator):
+class TranslatorCUSTOM(
+        MessageTranslatorUserDefinedFunctions,
+        source_format='json', target_format='json', operation='custom'):
     """
     This transformer only applies the user defined functions. There are no additional features.
     """
-    def __init__(self, user_functions, dependencies=None, main_function_name="script"):
-        super().__init__(user_functions, dependencies, main_function_name)
+
+    def init(self, user_functions=None, dependencies=None, main_function_name="script"):
+        """
+        TODO: Should be a normal constructor. But this is not possible right now as MessageTranslator
+        requires a default constructor without arguments.
+        """
+        return super().init(user_functions, dependencies, main_function_name)
+
+    def test_message(self, message: CloudEvent) -> bool:
+        raise NotImplementedError
 
     def translate(self, msg: CloudEvent):
         translated = msg.create_new_message()
@@ -67,46 +30,34 @@ class TranslatorCUSTOM(AbstractTranslator):
         return translated
 
 
-class TranslatorXMLtoJSON(AbstractTranslator):
-    """
-    This transformer converts an XML to JSON
-    """
-    def translate(self, msg: CloudEvent):
-        translated = msg.create_new_message()
-        translated.data = json.dumps(xmltodict.parse(msg.data))
-        return translated
+class TranslatorEDIT(
+        MessageTranslatorUserDefinedFunctions, MessageTranslatorPathManipulation,
+        source_format='json', target_format='json', operation='edit'):
 
+    dict_element_paths = None
 
-class TranslatorEDIT(AbstractTranslator):
-    def __init__(self, user_functions, dict_element_paths, dependencies=None, main_function_name="script"):
-        super().__init__(user_functions, dependencies, main_function_name)
-        self.dict_element_paths = self._prepare_dict_element_paths(dict_element_paths)
+    def init(self, user_functions, dict_element_paths, dependencies=None, main_function_name="script", **kwargs):
+        """
+        TODO: Should be a normal constructor. But this is not possible right now as MessageTranslator
+        requires a default constructor without arguments.
+        """
+        MessageTranslatorUserDefinedFunctions.init(self, user_functions, dependencies, main_function_name)
+        MessageTranslatorPathManipulation.init(self, dict_element_paths)
+        return self
 
-    @staticmethod
-    def _prepare_dict_element_paths(dict_element_paths):
-        return [{'key': d['key'], 'path':d['path'].split('.')} for d in dict_element_paths]
-
-    def _extract_elements_from_dict(self, dict_msg):
-        d = dict()
-        for dict_path in self.dict_element_paths:
-            d[dict_path['key']] = element_from_path(dict_msg, dict_path['path'])
-        return d
+    def test_message(self, message: CloudEvent) -> bool:
+        raise NotImplementedError
 
     def translate(self, msg: CloudEvent):
         translated = msg.create_new_message()
         dict_elements = self._extract_elements_from_dict(msg.data)
         translated_elements = self.user_script(dict_elements)
         for d in self.dict_element_paths:
-            translated.data = set_element_from_path(translated.data, d['path'], translated_elements[d['key']])
+            translated.data = self._set_element_from_path(translated.data, d['path'], translated_elements[d['key']])
         return translated
 
 
-class TranslatorREMOVE(AbstractTranslator):
-    def translate(self, msg):
-        raise NotImplementedError
-
-
-class TranslatorADD(AbstractTranslator):
+class TranslatorADD(MessageTranslatorUserDefinedFunctions):
     """
     This translator adds one or more elements to a message message
     """
@@ -114,4 +65,48 @@ class TranslatorADD(AbstractTranslator):
         raise NotImplementedError
 
 
+class TranslatorJSONtoXML(MessageTranslator, source_format='json', target_format='xml', operation='format_translation'):
+
+    def test_message(self, message: CloudEvent):
+        return isinstance(message.data, dict)
+
+    def translate(self, message: CloudEvent) -> CloudEvent:
+        translated = message.create_new_message()
+        translated.contenttype = 'application/xml'
+        E = builder.ElementMaker()
+        ROOT = self.recursive_build(E, 'root', message.data)
+        translated.data = etree.tostring(ROOT).decode()
+        return translated
+
+    def recursive_build(self, E: builder.ElementMaker, key, data: Any):
+        if isinstance(data, dict):
+            return self.build_element(E, key, [self.recursive_build(E, k, v) for k, v in data.items()])
+        elif isinstance(data, (list, tuple)):
+            return self.build_element(E, key, [self.recursive_build(E, key, value) for value in data])
+        else:
+            return self.build_element(E, key, str(data))
+
+    def build_element(self, E: builder.ElementMaker, key, value):
+        element = getattr(E, key)
+        if isinstance(value, list):
+            return element(*value)
+        elif value is not None:
+            return element(value)
+        return element()
+
+
+class TranslatorXMLtoJSON(
+        MessageTranslator,
+        source_format='xml', target_format='json', operation='format_translation'):
+    """
+    This transformer converts an XML to JSON
+    """
+
+    def test_message(self, message: CloudEvent) -> bool:
+        raise NotImplementedError
+
+    def translate(self, msg: CloudEvent):
+        translated = msg.create_new_message()
+        translated.data = json.dumps(xmltodict.parse(msg.data))
+        return translated
 
