@@ -128,7 +128,27 @@ class TranslatorEDIT(
 
 
 class TranslatorREMOVE(MessageTranslatorPathManipulation, source_format='json', target_format='json', operation='remove'):
+    """
+    This translator removes elements from messages. When the translator is created by the user, he provides
+    the paths to elements that shall be removed from every incoming message.
 
+    Example:
+    =======
+    Let's first create a translator and provide the paths to the elements that shall be removed:
+    > paths = [
+        {'key': '1', 'path': 'customer.profile.name'},
+        {'key': '2', 'path': 'customer.profile.id'},
+      ]
+    > trns = TranslatorREMOVE().init(paths)
+
+    Now let's simulate an incoming message
+    > cloud_event = self._get_cloud_event_template({'customer': {'profile': {'id': 1, 'name': 'John Doe'}}})
+    > result = trns.translate(cloud_event)
+
+    The elements in the paths were removed
+    > {'customer': {'profile': {}}}
+
+    """
     def init(self, dict_element_paths=None):
         """
         TODO: Should be a normal constructor. But this is not possible right now as MessageTranslator requires a default constructor without arguments.
