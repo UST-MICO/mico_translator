@@ -132,6 +132,20 @@ class MessageTranslatorPathManipulation(MessageTranslator, operation='abstract_c
         return d_aux
 
     @staticmethod
+    def _delete_element_from_path(dictionary, list_path):
+        def recursion(d, l):
+            key = l.pop(0)
+            if len(l) > 0:
+                return recursion(d[key], l)
+            else:
+                del d[key]
+        l_aux = deepcopy(list_path)
+        d_aux = deepcopy(dictionary)
+        recursion(d_aux, l_aux)
+        return d_aux
+
+
+    @staticmethod
     def _prepare_dict_element_paths(dict_element_paths):
         return [{'key': d['key'], 'path': d['path'].split('.')} for d in dict_element_paths]
 

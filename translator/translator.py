@@ -137,11 +137,13 @@ class TranslatorREMOVE(MessageTranslatorPathManipulation, source_format='json', 
 
     def translate(self, message: CloudEvent) -> CloudEvent:
         translated = message.create_new_message()
-        dict_elements = self._extract_elements_from_dict(message.data)
-        translated_elements = self.user_script(dict_elements)
-        for d in self.dict_element_paths:
-            translated.data = self._set_element_from_path(translated.data, d['path'], translated_elements[d['key']])
+        for p in self.dict_element_paths:
+            translated.data = self._delete_element_from_path(translated.data, p['path'])
         return translated
+
+    def test_message(self, message: CloudEvent) -> bool:
+        raise NotImplementedError
+
 
 class TranslatorADD(MessageTranslatorUserDefinedFunctions):
     """
