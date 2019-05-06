@@ -107,6 +107,7 @@ class MessageTranslatorPathManipulation(MessageTranslator, operation='abstract_c
 
     def init(self, dict_element_paths=None):
         self.dict_element_paths = self._prepare_dict_element_paths(dict_element_paths)
+        return self
 
     def _element_from_path(self, dictionary, list_path):
         l = deepcopy(list_path)

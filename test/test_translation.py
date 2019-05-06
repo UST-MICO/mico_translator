@@ -7,7 +7,7 @@ from translator.helpers import get_project_root
 class TestMessageTranslator:
 
     def test_cloud_event_1(self):
-        cloud_event: CloudEventg
+        cloud_event: CloudEvent
         with (get_project_root() / 'test' / 'test_data' / 'cloud_event_2.json').open() as _file:
             data = load(_file)
             cloud_event = CloudEvent(data)
