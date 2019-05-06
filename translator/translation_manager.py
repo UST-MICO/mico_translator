@@ -3,6 +3,7 @@ from kafka import KafkaConsumer, KafkaProducer
 from kafka.errors import NoBrokersAvailable
 from .translators import MessageTranslator
 from .messages import CloudEvent
+from .slip_router import route_message
 from json import loads, dumps
 from json.decoder import JSONDecodeError
 from time import sleep
@@ -50,9 +51,9 @@ class TranslationManager():
             print(f'Translating message "{message.serialize_message()}"')
             translated = self.translate_message(message)
             print(f'Translated message "{translated.serialize_message()}"')
-            self.producer.send(self.target_topic, translated)
+            route_message(self.producer, translated, self.target_topic)
 
-    def translate_message(message: CloudEvent) -> CloudEvent:
+    def translate_message(self, message: CloudEvent) -> CloudEvent:
         """
         Wrap translator.translate.
         """
