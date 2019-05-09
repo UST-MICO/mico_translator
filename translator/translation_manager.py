@@ -1,9 +1,9 @@
 from typing import List
 from kafka import KafkaConsumer, KafkaProducer
 from kafka.errors import NoBrokersAvailable
-from translator.translator import MessageTranslator
-from .messages import CloudEvent
-from .slip_router import route_message
+from abstract_translator import MessageTranslator
+from messages import CloudEvent
+from slip_router import route_message
 from json import loads, dumps
 from json.decoder import JSONDecodeError
 from time import sleep

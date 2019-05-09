@@ -1,5 +1,5 @@
-from translator.translator import TranslatorJSONtoXML
-from translator.helpers import load_test_data
+from translator import TranslatorJSONtoXML
+from helpers import load_test_data
 from translator_test import TranslatorTest
 from translator.messages import CloudEvent
 from json import loads

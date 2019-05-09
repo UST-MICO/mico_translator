@@ -1,8 +1,7 @@
-from translator.abstract_translator import MessageTranslator
-from translator.translator import TranslatorXMLtoJSON
-from translator.helpers import load_test_data
+from abstract_translator import MessageTranslator
+from translator import TranslatorXMLtoJSON
+from helpers import load_test_data
 from translator_test import TranslatorTest
-
 import json
 
 

@@ -1,7 +1,7 @@
-from translator.helpers import load_test_data
+from helpers import load_test_data
 from translator_test import TranslatorTest
-from translator.translator import TranslatorCUSTOM
-from translator.abstract_translator import MessageTranslator
+from translator import TranslatorCUSTOM
+from abstract_translator import MessageTranslator
 import json
 
 

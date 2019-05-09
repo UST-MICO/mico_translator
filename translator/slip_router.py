@@ -1,4 +1,4 @@
-from .messages import CloudEvent
+from messages import CloudEvent
 from kafka import KafkaProducer
 from typing import List, Dict, Union
 

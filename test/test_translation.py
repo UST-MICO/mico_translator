@@ -1,7 +1,7 @@
 from json import load
-from translator.messages import CloudEvent
-from translator.abstract_translator import MessageTranslator
-from translator.helpers import get_project_root
+from messages import CloudEvent
+from abstract_translator import MessageTranslator
+from helpers import get_project_root
 
 
 class TestMessageTranslator:

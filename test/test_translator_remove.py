@@ -1,5 +1,5 @@
-from translator.helpers import load_test_data
-from translator.translator import TranslatorREMOVE
+from helpers import load_test_data
+from translator import TranslatorREMOVE
 from translator_test import TranslatorTest
 import json
 

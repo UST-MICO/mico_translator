@@ -1,7 +1,7 @@
 import json
 import xmltodict
-from translator.abstract_translator import *
-from .messages import CloudEvent
+from abstract_translator import *
+from messages import CloudEvent
 from lxml import etree, builder
 from typing import Any
 

@@ -1,12 +1,6 @@
 from kafka import KafkaProducer
 from kafka import KafkaConsumer
-from kafka import KafkaAdminClient
-from kafka import TopicPartition
-from kafka.admin import NewTopic
-from translator.messages import CloudEvent
-from translator.helpers import load_test_data
-from json import loads, dumps
-from pathlib import Path
+from helpers import load_test_data
 from time import sleep
 
 bootstrap_servers = ['localhost:9092']

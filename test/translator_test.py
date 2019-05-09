@@ -1,5 +1,5 @@
-from translator.messages import CloudEvent
-from translator.helpers import load_test_data
+from messages import CloudEvent
+from helpers import load_test_data
 import json
 
 

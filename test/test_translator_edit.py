@@ -1,7 +1,7 @@
-from translator.helpers import load_test_data
-from translator.translator import TranslatorEDIT
+from helpers import load_test_data
+from translator import TranslatorEDIT
 from translator_test import TranslatorTest
-from translator.abstract_translator import MessageTranslator
+from abstract_translator import MessageTranslator
 import json
 
 msg_data_1 = {
