@@ -17,3 +17,7 @@ kafka-console-producer.sh --broker-list localhost:9092 --topic test
 kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic neu --partition 0
 ```
 
+```bash
+# create compact topic (adapt command to your installation where neccessary)
+kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --config cleanup.policy=compact --topic compact
+```
