@@ -10,5 +10,6 @@ COPY Pipfile.lock ./
 RUN pipenv install --system --deploy --ignore-pipfile
 
 COPY translator ./translator
+WORKDIR /usr/src/app/translator
 
-CMD python -m translator
+CMD python __main__.py

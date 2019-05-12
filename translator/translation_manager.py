@@ -39,7 +39,8 @@ class TranslationManager():
         """
         for consumerRecord in self.consumer:
             try:
-                message = CloudEvent(loads(consumerRecord.value.decode()))
+                d = loads(consumerRecord.value.decode())
+                message = CloudEvent(d)
             except JSONDecodeError:
                 print(f'Could not deserialize message "{consumerRecord.value.decode()}", skipping message!')
                 continue

@@ -23,10 +23,12 @@ class TestTranslatorEDIT(TranslatorTest):
         assert translator.operation == 'edit'
 
     def test_1(self):
+        script = load_test_data('test_script_4.py')
+        element_paths = json.loads(load_test_data('test_paths_4.json'))
         cloud_event = self._get_cloud_event_template(msg_data_1)
-        config = json.loads(load_test_data('test_config_4.json'))
-        trns = TranslatorEDIT().init(user_functions=config['function_scripts'],
-                                     dict_element_paths=config['element_paths'])
+        trns = TranslatorEDIT()
+        trns.set_script(script, 'script')
+        trns.set_element_paths(element_paths)
         result = trns.translate(cloud_event)
 
         assert(result.data['customer']['profile']['id'] == 101)

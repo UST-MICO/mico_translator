@@ -54,44 +54,26 @@ class MessageTranslatorUserDefinedFunctions(MessageTranslator, operation='abstra
     main_function_name = None
     user_script = None
 
-    def init(self, user_functions=None, dependencies=None, main_function_name="script", **kwargs):
-        """
-        TODO: Should be a normal constructor. But this is not possible right now as MessageTranslator
-        requires a default constructor without arguments.
-        """
-        self._import_modules(dependencies)
-        self.dependencies = dependencies
-        self.script = user_functions
-        self.main_function_name = main_function_name
-        self.user_script = self._load_user_defined_functions(user_functions, main_function_name)
-        return self
-
-    @staticmethod
-    def _load_user_defined_functions(user_functions, main_function_name):
+    def set_script(self, user_defined_script, main_function_name):
         """
         Loads the user defined functions into the global variable space. Additionally loads the function, which can
         be used as entry point (main function) when a message shall be transformed.
-        :param ([dict]) user_functions: A list of dictionaries. Each provides a python function
-        :param ([str]) user_functions: The name of the entry point function (main function)
-
-        :return: function object of the entry point function (main function)
+        :param str user_defined_script: The script that defines that functions
+        :param str main_function_name: The name of the entry point function (main function)
         """
-        if user_functions is not None:
-            for func in user_functions or []:
-                exec(func["function"])
-                globals()[func["function_name"]] = locals()[func["function_name"]]
-            invalidate_caches()
-            return globals()[main_function_name]
-
-    @staticmethod
-    def _import_modules(modules):
-        """
-        Imports the modules, that are required in the user defined functions.
-        :param ([str]) modules: the names of the modules, that shall be imported
-        """
-        for module in modules or []:
-            globals()[module] = import_module(module)
+        from types import FunctionType
+        locals_tmp = list(locals().keys()) + ['locals_tmp']
+        exec(user_defined_script)
+        keys_new_objects = [k for k in locals().keys() if k not in locals_tmp]
+        for k in keys_new_objects:
+            globals()[k] = locals()[k]
         invalidate_caches()
+        function_names = [k for k in keys_new_objects if isinstance(globals().get(k), FunctionType)]
+        if len(function_names) == 1:
+            self.main_function_name = function_names[0]
+        else:
+            self.main_function_name = main_function_name
+        self.user_script = globals().get(self.main_function_name)
 
     @abstractmethod
     def test_message(self, message: CloudEvent) -> bool:
@@ -105,9 +87,8 @@ class MessageTranslatorPathManipulation(MessageTranslator, operation='abstract_c
 
     dict_element_paths = None
 
-    def init(self, dict_element_paths=None):
+    def set_element_paths(self, dict_element_paths=None):
         self.dict_element_paths = self._prepare_dict_element_paths(dict_element_paths)
-        return self
 
     def _element_from_path(self, dictionary, list_path):
         l = deepcopy(list_path)
@@ -143,7 +124,6 @@ class MessageTranslatorPathManipulation(MessageTranslator, operation='abstract_c
         d_aux = deepcopy(dictionary)
         recursion(d_aux, l_aux)
         return d_aux
-
 
     @staticmethod
     def _prepare_dict_element_paths(dict_element_paths):

@@ -1,0 +1,4 @@
+[
+  {"key": "path_1", "path": "customer.profile.id"},
+  {"key": "path_2", "path": "customer.profile.name"}
+]

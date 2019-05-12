@@ -10,25 +10,22 @@ class TranslatorCUSTOM(
         MessageTranslatorUserDefinedFunctions,
         source_format='json', target_format='json', operation='custom'):
     """
-    The user provides a set of user defined functions to the init function.
+    The user has to provide a .py file with user defined functions.
     The functions are then instantiated. Everytime when a message comes in
     Translator.CUSTOM.translate, the user defined functions are applied on
     this message. It is required, that the user provides the name of the initial
     function (main_function_name), to which the message shall be provided (the
     other functions may then invoked by this function)
-    When the user defined functions apply some dependencies, these can as well
-    be provided in the init_function
+    The user may import dependencies that are available to the environment.
 
     Example:
     =======
 
         The user defines the functions, that are applied on the each message and
         passes them to the translator:
-        > functions = [{
-                        'function_name': 'script',
-                        'function': 'def script(string):\n    return "translated: " + string'
-                      }]
-        > trns = TranslatorCUSTOM().init(user_functions=functions)
+        > script = 'def foo(string):\n    return "translated: " + string'
+        > trns = TranslatorCUSTOM()
+        > trns.set_script(script, 'foo')
 
         Now let's simulate an incoming message
         > cloud_event = self._get_cloud_event_template('this is a plain text message')
@@ -39,14 +36,9 @@ class TranslatorCUSTOM(
         > print(result)
         >> 'translated: this is a plain text message'
     """
-    def init(self, user_functions=None, dependencies=None, main_function_name="script"):
-        """
-        TODO: Should be a normal constructor. But this is not possible right now as MessageTranslator requires a default constructor without arguments.
-        """
-        return super().init(user_functions, dependencies, main_function_name)
 
     def test_message(self, message: CloudEvent) -> bool:
-        raise NotImplementedError
+        return isinstance(message, dict)
 
     def translate(self, message: CloudEvent):
         translated = message.create_new_message()
@@ -80,18 +72,16 @@ class TranslatorEDIT(
             }]
 
         The user defines the function, that shall be applied on the elements
-        > user_functions = [{
-                            'function_name': 'script',
-                            'function': "def script(dict_elements):
+        > script = "def script(dict_elements):
                                             dict_elements['path_1'] = dict_elements['path_1'] + 100
                                             dict_elements['path_2'] = dict_elements['path_2'].lower()
-                                            return dict_elements\n"}]
+                                            return dict_elements\n"
 
 
-        Let's create the translator with the corresponding paths and functions
-        > trns = TranslatorEDIT().init(
-                            user_functions= user_functions,
-                            dict_element_paths=element_paths)
+        Let's create the translator and provide the corresponding paths and functions
+        > trns = TranslatorEDIT()
+        > trns.set_script(script)
+        > trns.set_element_paths(element_paths)
 
         Now let's simulate an incoming message
         > cloud_event = self._get_cloud_event_template({'customer': {'profile': {'id': 1, 'name': 'John Doe'}}})
@@ -107,16 +97,8 @@ class TranslatorEDIT(
 
     dict_element_paths = None
 
-    def init(self, user_functions, dict_element_paths, dependencies=None, main_function_name="script", **kwargs):
-        """
-        TODO: Should be a normal constructor. But this is not possible right now as MessageTranslator requires a default constructor without arguments.
-        """
-        MessageTranslatorUserDefinedFunctions.init(self, user_functions, dependencies, main_function_name)
-        MessageTranslatorPathManipulation.init(self, dict_element_paths)
-        return self
-
     def test_message(self, message: CloudEvent) -> bool:
-        raise NotImplementedError
+        return isinstance(message.data, dict)
 
     def translate(self, message: CloudEvent):
         translated = message.create_new_message()
@@ -139,7 +121,8 @@ class TranslatorREMOVE(MessageTranslatorPathManipulation, source_format='json', 
         {'key': '1', 'path': 'customer.profile.name'},
         {'key': '2', 'path': 'customer.profile.id'},
       ]
-    > trns = TranslatorREMOVE().init(paths)
+    > trns = TranslatorREMOVE()
+    > trns.set_element_paths(paths)
 
     Now let's simulate an incoming message
     > cloud_event = self._get_cloud_event_template({'customer': {'profile': {'id': 1, 'name': 'John Doe'}}})
@@ -149,11 +132,6 @@ class TranslatorREMOVE(MessageTranslatorPathManipulation, source_format='json', 
     > {'customer': {'profile': {}}}
 
     """
-    def init(self, dict_element_paths=None):
-        """
-        TODO: Should be a normal constructor. But this is not possible right now as MessageTranslator requires a default constructor without arguments.
-        """
-        return super().init(dict_element_paths)
 
     def translate(self, message: CloudEvent) -> CloudEvent:
         translated = message.create_new_message()
@@ -162,7 +140,7 @@ class TranslatorREMOVE(MessageTranslatorPathManipulation, source_format='json', 
         return translated
 
     def test_message(self, message: CloudEvent) -> bool:
-        raise NotImplementedError
+        return isinstance(message, dict)
 
 
 class TranslatorADD(MessageTranslatorUserDefinedFunctions):
@@ -244,7 +222,10 @@ class TranslatorXMLtoJSON(
     """
 
     def test_message(self, message: CloudEvent) -> bool:
-        raise NotImplementedError
+        """
+        TODO
+        """
+        return True
 
     def translate(self, msg: CloudEvent):
         translated = msg.create_new_message()
