@@ -1,4 +1,4 @@
-from messages import CloudEvent
+from .messages import CloudEvent
 from typing import Dict, Tuple
 from abc import abstractmethod
 from importlib import import_module, invalidate_caches
